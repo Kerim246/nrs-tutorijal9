@@ -1,32 +1,29 @@
-version: '3'
-
+version: '2'
 services:
-  distro:
-    image: alpine
-    container_name: Alpine_Distro
-    restart: always
-    entrypoint: tail -f /dev/null
-
-  database:
-    image: postgres:latest
-    container_name: postgres_db
-    volumes:
-      - data:/var/lib/postgresql
-    ports:
-      - "5432:5432"
-  web:
-    image: nginx:latest
-    container_name: nginx
-    volumes:
-      - ./mysite.template:/etc/nginx/conf.d/mysite.template
-    ports:
-      - "8080:80"
-    environment:
-      - NGINX_HOST=example.com
-      - NGINX_port=80
-    links:
-      - database:db
-      - distro
-volumes:
-  data:
-    external: true
+    proxy:
+      image: proxy
+      ports:
+          - 80:80
+      restart: always
+ 
+    nginx:
+        depends_on:
+            - proxy
+        image: nginx:stable-alpine
+        restart: always
+ 
+    node:
+        depends_on:
+            - proxy
+        image: mbektasevi1/tutorijal7:1.0
+        ports:
+            - 8086
+        restart: always
+    
+    bulletin:
+        depends_on:
+            - proxy
+        image: mbektasevi1/bulletinboard:1.0
+        ports:
+            - 8083
+        restart: always
